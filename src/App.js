@@ -4,12 +4,14 @@ import Home from "./Pages/Home";
 import BlogPage from "./Pages/BlogPage";
 import TagPage from "./Pages/TagPage";
 import CategoryPage from "./Pages/CategoryPage";
+import FeaturedBlogs from "./Pages/FeaturedBlogs";
+import About from "./Pages/About";
+import Contact from "./Pages/Contact";
 import { AppContext } from "./Context/AppContext";
 import { Routes, Route, useLocation, useSearchParams } from "react-router-dom";
 import { ThemeProvider } from './Context/ThemeContext';
 import EnhancedHeader from './Components/EnhancedHeader';
 import AddBlog from "./Components/AddBlog";
-import FeaturedBlogs from "./Pages/FeaturedBlogs";
 
 const App = () => {
   const { fetchBlogPosts } = useContext(AppContext);
@@ -31,9 +33,9 @@ const App = () => {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
         <EnhancedHeader />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container px-4 py-8 mx-auto">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/blog/:blogId" element={<BlogPage />} />
@@ -42,6 +44,8 @@ const App = () => {
             <Route path="/add-blog" element={<AddBlog />} />
             <Route path="/edit-blog/:blogId" element={<AddBlog />} />
             <Route path="/featured-blogs" element={<FeaturedBlogs />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
       </div>
