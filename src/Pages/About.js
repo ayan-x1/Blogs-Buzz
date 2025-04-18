@@ -72,17 +72,17 @@ const About = () => {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {[
             {
-              name: "Alex Johnson",
+              name: "Ayan Pathan",
               role: "Lead Editor",
               bio: "Specialized in web development and cloud technologies."
             },
             {
-              name: "Sarah Chen",
+              name: "Shafin Shaikh",
               role: "Senior Writer",
               bio: "Expert in artificial intelligence and machine learning."
             },
             {
-              name: "Michael Brown",
+              name: "Shashwat jha",
               role: "Tech Analyst",
               bio: "Focused on emerging technologies and industry trends."
             }
