@@ -19,6 +19,11 @@ const App = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Skip fetch if we're on add-blog or edit-blog pages
+    if (location.pathname.includes("/add-blog") || location.pathname.includes("/edit-blog")) {
+      return;
+    }
+    
     const page = Number(searchParams.get("page")) || 1;
     const lastPathSegment = location.pathname.split("/").at(-1).replaceAll("-", " ");
 
@@ -33,7 +38,7 @@ const App = () => {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 dark:text-white">
         <EnhancedHeader />
         <main className="container px-4 py-8 mx-auto">
           <Routes>
@@ -42,7 +47,7 @@ const App = () => {
             <Route path="/tags/:tag" element={<TagPage />} />
             <Route path="/categories/:category" element={<CategoryPage />} />
             <Route path="/add-blog" element={<AddBlog />} />
-            <Route path="/edit-blog/:blogId" element={<AddBlog />} />
+            <Route path="/edit-blog/:blogId" element={<AddBlog isEditMode={true} />} />
             <Route path="/featured-blogs" element={<FeaturedBlogs />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

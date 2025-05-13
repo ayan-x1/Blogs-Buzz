@@ -2,15 +2,30 @@ import React, { useContext, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AppContext } from '../Context/AppContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 const BlogDetails = ({ post }) => {
-    const { removeBlog } = useContext(AppContext)
+    const { removeBlog, restoreBlogAtIndex } = useContext(AppContext)
     const navigate = useNavigate()
     const [showDeleteModal, setShowDeleteModal] = useState(false)
 
     const handleDelete = async () => {
         await removeBlog(post.id)
         setShowDeleteModal(false)
+        toast((t) => (
+            <span>
+                Blog deleted.
+                <button
+                    onClick={() => {
+                        restoreBlogAtIndex()
+                        toast.dismiss(t.id)
+                    }}
+                    className="ml-4 px-3 py-1 bg-blue-500 rounded hover:bg-blue-600 transition text-white"
+                >
+                    Undo
+                </button>
+            </span>
+        ), { duration: 5000 })
     }
 
     return (
