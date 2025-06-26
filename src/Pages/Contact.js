@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import emailjs from "@emailjs/browser";
 
 const Contact = () => {
-  const [formState, setFormState] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: '',
@@ -11,25 +12,44 @@ const Contact = () => {
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormState({
-      ...formState,
-      [name]: value
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormState({ ...formState, submitting: true });
     
-    // Simulate API call
-    setTimeout(() => {
-      setFormState({
-        ...formState,
-        submitted: true,
-        submitting: false
-      });
-    }, 1500);
+    // Set submitting state
+    setFormData(prev => ({ ...prev, submitting: true }));
+    
+    try {
+      await emailjs.send(
+        "service_m4oxgjh", 
+        "template_wpe2i0l", 
+        {
+          from_name: formData.name,
+          to_name: "Ayan",
+          from_email: formData.email,
+          to_email: "pathanayan8347@gmail.com",
+          message: formData.message
+        },
+        "739RtCAcEd1FGUM7N" // Add your EmailJS public key here
+      );
+      
+      // Set submitted state
+      setFormData(prev => ({ 
+        ...prev, 
+        submitted: true, 
+        submitting: false 
+      }));
+      
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      setFormData(prev => ({ ...prev, submitting: false }));
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -80,7 +100,7 @@ const Contact = () => {
           </div>
           
           <div className="p-6 bg-gray-50 dark:bg-gray-700 md:p-8 md:w-1/2">
-            {formState.submitted ? (
+            {formData.submitted ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -102,7 +122,7 @@ const Contact = () => {
                     type="text"
                     id="name"
                     name="name"
-                    value={formState.name}
+                    value={formData.name}
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
@@ -114,7 +134,7 @@ const Contact = () => {
                     type="email"
                     id="email"
                     name="email"
-                    value={formState.email}
+                    value={formData.email}
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
@@ -126,7 +146,7 @@ const Contact = () => {
                     id="message"
                     name="message"
                     rows="4"
-                    value={formState.message}
+                    value={formData.message}
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
@@ -135,12 +155,12 @@ const Contact = () => {
                 <div>
                   <motion.button
                     type="submit"
-                    disabled={formState.submitting}
+                    disabled={formData.submitting}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {formState.submitting ? (
+                    {formData.submitting ? (
                       <span className="flex items-center justify-center">
                         <svg className="w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
