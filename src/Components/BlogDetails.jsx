@@ -5,28 +5,74 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 
 const BlogDetails = ({ post }) => {
-    const { removeBlog, restoreBlogAtIndex } = useContext(AppContext)
+    const { deleteBlog, addBlog } = useContext(AppContext)
     const navigate = useNavigate()
     const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deletedPost, setDeletedPost] = useState(null)
+    
 
     const handleDelete = async () => {
-        await removeBlog(post.id)
-        setShowDeleteModal(false)
-        toast((t) => (
-            <span>
-                Blog deleted.
-                <button
-                    onClick={() => {
-                        restoreBlogAtIndex()
-                        toast.dismiss(t.id)
-                    }}
-                    className="ml-4 px-3 py-1 bg-blue-500 rounded hover:bg-blue-600 transition text-white"
-                >
-                    Undo
-                </button>
-            </span>
-        ), { duration: 5000 })
+        try {
+            // Store the post data before deletion for potential restoration
+            setDeletedPost(post)
+            
+            const result = await deleteBlog(post.id)
+            setShowDeleteModal(false)
+            
+            if (result.success) {
+                toast((t) => (
+                    <div className="flex items-center">
+                        <span>Blog deleted successfully.</span>
+                        <button
+                            onClick={() => {
+                                handleRestore()
+                                toast.dismiss(t.id)
+                            }}
+                            className="ml-4 px-3 py-1 bg-blue-500 rounded hover:bg-blue-600 transition text-white text-sm"
+                        >
+                            Undo
+                        </button>
+                    </div>
+                ), { 
+                    duration: 5000,
+                    style: {
+                        background: '#10b981',
+                        color: 'white',
+                    }
+                })
+                
+                // Navigate back to home after successful deletion
+                setTimeout(() => {
+                    navigate('/')
+                }, 1000)
+            } else {
+                toast.error(result.message || 'Failed to delete blog')
+            }
+        } catch (error) {
+            console.error('Error deleting blog:', error)
+            toast.error('An error occurred while deleting the blog')
+            setShowDeleteModal(false)
+        }
     }
+
+    const handleRestore = async () => {
+        if (!deletedPost) return
+    
+        try {
+            const result = await addBlog(deletedPost)
+    
+            if (result.success) {
+                toast.success('Blog restored successfully!')
+                setDeletedPost(null)
+            } else {
+                toast.error('Failed to restore blog')
+            }
+        } catch (error) {
+            console.error('Error restoring blog:', error)
+            toast.error('An error occurred while restoring the blog')
+        }
+    }
+    
 
     return (
         <>
@@ -47,6 +93,7 @@ const BlogDetails = ({ post }) => {
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => navigate(`/edit-blog/${post.id}`)}
                                     className="text-blue-500 hover:text-blue-600 p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                    title="Edit blog"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -57,6 +104,7 @@ const BlogDetails = ({ post }) => {
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => setShowDeleteModal(true)}
                                     className="text-red-500 hover:text-red-600 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                    title="Delete blog"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -69,19 +117,21 @@ const BlogDetails = ({ post }) => {
                             {post.content}
                         </p>
 
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.map((tag, index) => (
-                                <NavLink key={index} to={`/tags/${tag}`}>
-                                    <motion.span
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
-                                    >
-                                        #{tag}
-                                    </motion.span>
-                                </NavLink>
-                            ))}
-                        </div>
+                        {post.tags && post.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {post.tags.map((tag, index) => (
+                                    <NavLink key={index} to={`/tags/${tag}`}>
+                                        <motion.span
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                                        >
+                                            #{tag}
+                                        </motion.span>
+                                    </NavLink>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                             <span>By {post.author}</span>
@@ -112,14 +162,14 @@ const BlogDetails = ({ post }) => {
                                 Delete Blog Post
                             </h3>
                             <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                Are you sure you want to delete "{post.title}"? This action cannot be undone.
+                                Are you sure you want to delete "{post.title}"? You can undo this action for a short time after deletion.
                             </p>
                             <div className="flex justify-end gap-3">
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => setShowDeleteModal(false)}
-                                    className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                    className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     Cancel
                                 </motion.button>
@@ -127,7 +177,7 @@ const BlogDetails = ({ post }) => {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={handleDelete}
-                                    className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                                    className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
                                 >
                                     Delete
                                 </motion.button>
